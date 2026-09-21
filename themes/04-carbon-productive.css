@@ -1,0 +1,397 @@
+/*
+ * Carbon Productive
+ * Mais denso e sóbrio, indicado para especificações, processos, requisitos e documentos operacionais.
+ * Arquivo independente para HTML gerado a partir de Markdown.
+ */
+
+:root {
+  --bg: #FFFFFF;
+  --surface: #F4F4F4;
+  --surface-2: #E0E0E0;
+  --text: #161616;
+  --muted: #525252;
+  --heading: #161616;
+  --accent: #0F62FE;
+  --accent-2: #0043CE;
+  --border: #C6C6C6;
+  --code-bg: #262626;
+  --code-text: #F4F4F4;
+  --inline-bg: #E8E8E8;
+  --inline-text: #8A3FFC;
+  --radius: 0px;
+  --shadow: none;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.58;
+  color: var(--text);
+  background: var(--bg);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 40px;
+  word-break: normal;
+  overflow-wrap: break-word;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+p {
+  margin: .75rem 0 1rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--heading);
+  line-height: 1.25;
+  font-weight: 650;
+  scroll-margin-top: 1rem;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 2rem 0 1.25rem;
+  padding-bottom: .55rem;
+  border-bottom: 4px solid var(--accent);
+}
+
+h2 {
+  font-size: 1.55rem;
+  margin: 1.9rem 0 .95rem;
+  padding-bottom: .35rem;
+  border-bottom: 1px solid var(--border);
+}
+
+h3 {
+  font-size: 1.34rem;
+  margin: 1.55rem 0 .7rem;
+}
+
+h4 {
+  font-size: 1.12rem;
+  margin: 1.3rem 0 .55rem;
+}
+
+h5,
+h6 {
+  font-size: 1rem;
+  margin: 1.1rem 0 .5rem;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: .08em;
+  text-underline-offset: .16em;
+}
+
+a:hover {
+  color: var(--accent-2);
+}
+
+strong {
+  font-weight: 700;
+}
+
+em {
+  color: var(--muted);
+}
+
+ul,
+ol {
+  margin: .75rem 0 1rem;
+  padding-left: 1.55rem;
+}
+
+li {
+  margin: .28rem 0;
+}
+
+li::marker {
+  color: var(--accent);
+}
+
+ul ul,
+ol ol,
+ul ol,
+ol ul {
+  margin: .25rem 0;
+}
+
+:not(pre) > code {
+  font-family: "IBM Plex Mono", "Fira Code", Consolas, monospace;
+  font-size: .9em;
+  color: var(--inline-text);
+  background: var(--inline-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: .12em .34em;
+}
+
+pre {
+  margin: 1.15rem 0;
+  padding: 15px 17px;
+  overflow: auto;
+  color: var(--code-text);
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--accent);
+  box-shadow: var(--shadow);
+  tab-size: 4;
+}
+
+pre code {
+  display: block;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font-family: "IBM Plex Mono", "Fira Code", Consolas, monospace;
+  font-size: .92rem;
+  line-height: 1.58;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+blockquote {
+  margin: 1.15rem 0;
+  padding: .78rem 1rem;
+  color: var(--muted);
+  background: #F4F4F4;
+  border-left: 4px solid #0F62FE;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+blockquote > :first-child {
+  margin-top: 0;
+}
+
+blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+table {
+  width: 100%;
+  margin: 1.25rem 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+th,
+td {
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--heading);
+  background: #E0E0E0;
+  font-weight: 650;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+th:last-child,
+td:last-child {
+  border-right: 0;
+}
+
+tbody tr:nth-child(even) {
+  background: var(--surface);
+}
+
+tbody tr:hover {
+  background: var(--surface-2);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.35rem auto;
+  border-radius: var(--radius);
+}
+
+figure {
+  margin: 1.35rem 0;
+}
+
+figcaption {
+  margin-top: .5rem;
+  color: var(--muted);
+  font-size: .9rem;
+  text-align: center;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.2rem 0;
+}
+
+mark {
+  color: inherit;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-radius: 3px;
+  padding: .05em .2em;
+}
+
+kbd {
+  display: inline-block;
+  padding: .12rem .4rem;
+  color: var(--heading);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font-family: "IBM Plex Mono", "Fira Code", Consolas, monospace;
+  font-size: .82em;
+  white-space: nowrap;
+}
+
+details {
+  margin: 1rem 0;
+  padding: .65rem .8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+summary {
+  color: var(--heading);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin: 0 .4rem 0 0;
+  accent-color: var(--accent);
+  vertical-align: -2px;
+}
+
+.mermaid {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+svg {
+  max-width: 100%;
+}
+
+::selection {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent-2) 28%, transparent);
+}
+
+h1, h2, h3, h4 { font-weight: 500; letter-spacing: 0; }
+h1 { padding-left: 14px; border-bottom: none; border-left: 4px solid var(--accent); }
+table { font-size: .93rem; }
+th { text-transform: none; letter-spacing: .01em; }
+pre { border-left: 3px solid var(--accent); }
+
+@media (max-width: 768px) {
+  body {
+    max-width: none;
+    padding: 22px 18px;
+    font-size: 15px;
+  }
+
+  h1 {
+    font-size: 1.82rem;
+  }
+
+  h2 {
+    font-size: 1.45rem;
+  }
+
+  h3 {
+    font-size: 1.22rem;
+  }
+
+  pre {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 14px;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+@media print {
+  :root {
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-2: #F5F5F5;
+    --text: #111111;
+    --muted: #444444;
+    --heading: #111111;
+    --border: #CFCFCF;
+  }
+
+  body {
+    max-width: none;
+    padding: 0;
+    background: #FFFFFF;
+    color: #111111;
+    font-size: 10.5pt;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  pre,
+  blockquote,
+  table,
+  img,
+  figure,
+  details {
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid;
+  }
+
+  pre {
+    box-shadow: none;
+  }
+}

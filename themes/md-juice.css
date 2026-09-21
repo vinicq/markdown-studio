@@ -1,0 +1,572 @@
+/*
+=====================================================================
+ md-juice design tokens
+
+ Layer 1 (fast tokens)   : --juice-*  -> minimal, broad theme surface.
+ Layer 2 (granular)      : --mdj-*    -> fine control per component.
+
+ Rule of use:
+ 1. Quick theme: override a handful of --juice-* tokens after this file.
+ 2. Fine tuning: override specific --mdj-* tokens (they win over juice).
+ 3. Dark mode: add [data-theme="dark"] or .juice-dark on a container.
+ 4. Optional auto-dark: enable the prefers-color-scheme block below.
+
+ This file intentionally keeps the fast token set small for simplicity.
+=====================================================================
+*/
+.md-juice {
+	/* ------------------------------------------------------------------ */
+	/* Layer 1: FAST TOKENS (override these for rapid theming)            */
+	/* ------------------------------------------------------------------ */
+	--juice-color-bg: #ffffff;
+	--juice-color-bg-alt: #F4F4F4;
+	/* secondary surface */
+	--juice-color-text: #1f2328;
+	--juice-color-text-secondary: #59636e;
+	--juice-color-border: #d1d9e0;
+	--juice-color-interactive: #0969da;
+	--juice-color-accent: var(--juice-color-interactive);
+	--juice-color-surface-code: var(--juice-color-bg-alt);
+	/* dedicated code block surface */
+
+	/* Typography & layout primitives */
+	--juice-font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+	--juice-font-family-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+	--juice-font-size-base: 16px;
+	--juice-line-height-base: 1.5;
+	--juice-radius-base: 6px;
+	--juice-transition: 150ms; /* default Tailwind CSS transitions duration */
+	--juice-transition-timing: cubic-bezier(0.4, 0, 0.2, 1); /* default Tailwind CSS timing function */
+
+	/* ------------------------------------------------------------------ */
+	/* Layer 2: GRANULAR TOKENS (fine control – override as needed)       */
+	/* ------------------------------------------------------------------ */
+	--mdj-background-color: var(--juice-color-bg);
+	--mdj-background-secondary-color: var(--juice-color-bg-alt);
+	--mdj-text-primary-color: var(--juice-color-text);
+	--mdj-text-secondary-color: var(--juice-color-text-secondary);
+	--mdj-border-color: var(--juice-color-border);
+	--mdj-link-color: var(--juice-color-interactive);
+	--mdj-accent-color: var(--juice-color-accent);
+	--mdj-code-bg: var(--juice-color-surface-code);
+	--mdj-kbd-bg: var(--juice-color-surface-code);
+	--mdj-kbd-border: var(--juice-color-border);
+	--mdj-mark-bg: var(--juice-color-bg-alt);
+	--mdj-table-th-bg: var(--juice-color-bg);
+	--mdj-table-tr-bg: var(--juice-color-bg);
+	--mdj-table-tr2-bg: var(--juice-color-bg-alt);
+
+	--mdj-font-family: var(--juice-font-family-base);
+	--mdj-monospace: var(--juice-font-family-monospace);
+	--mdj-font-size: var(--juice-font-size-base);
+	--mdj-line-height: var(--juice-line-height-base);
+	--mdj-radius: var(--juice-radius-base);
+	--mdj-hr-height: 1px;
+
+	--mdj-focus-outline: 2px solid var(--mdj-accent-color);
+	--mdj-muted-bg: transparent;
+	--mdj-transition: var(--juice-transition);
+	--mdj-transition-timing: var(--juice-transition-timing);
+
+	--mdj-syntax-comment: #59636e;
+	--mdj-syntax-keyword: #cf222e;
+	--mdj-syntax-function: #0550ae;
+	--mdj-syntax-string: #116329;
+	--mdj-syntax-number: #953800;
+	--mdj-syntax-constant: #6639ba;
+	--mdj-syntax-type: #8250df;
+	--mdj-syntax-bg: var(--mdj-code-bg);
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Dark theme (explicit) — scoped */
+/* ------------------------------------------------------------------ */
+.md-juice[data-theme="dark"],
+.md-juice.juice-dark {
+	--juice-color-bg: #0d1117;
+	--juice-color-bg-alt: #151B23;
+	--juice-color-text: #c9d1d9;
+	--juice-color-text-secondary: #8b949e;
+	--juice-color-border: rgba(110, 118, 129, 0.40);
+	--juice-color-interactive: #58a6ff;
+	--juice-color-accent: var(--juice-color-interactive);
+	--juice-color-surface-code: #0f1720;
+	/* Granular adjustments unique to dark */
+	--mdj-kbd-border: rgba(255, 255, 255, 0.06);
+	--mdj-mark-bg: rgba(255, 255, 255, 0.03);
+}
+
+/* Optional system dark fallback (no explicit theme set) */
+
+@media (prefers-color-scheme: dark) {
+	.md-juice:not([data-theme]):not(.juice-light):not(.juice-dark) {
+		--juice-color-bg: #0d1117;
+		--juice-color-bg-alt: #010409;
+		--juice-color-text: #c9d1d9;
+		--juice-color-text-secondary: #8b949e;
+		--juice-color-border: rgba(110, 118, 129, 0.40);
+		--juice-color-interactive: #58a6ff;
+		--juice-color-accent: var(--juice-color-interactive);
+		--juice-color-surface-code: #0f1720;
+		--mdj-kbd-border: rgba(255, 255, 255, 0.06);
+		--mdj-mark-bg: rgba(255, 255, 255, 0.03);
+	}
+}
+
+@layer md-juice {
+/* Base (solo modo claro por defecto) */
+.md-juice .markdown-body {
+    color-scheme: light;
+	color: var(--mdj-text-primary-color);
+	background-color: var(--mdj-background-color);
+	font-family: var(--mdj-font-family);
+	font-size: var(--mdj-font-size);
+	line-height: var(--mdj-line-height);
+	word-wrap: break-word;
+}
+
+/* Cuando el contenedor está en dark, forzar esquema oscuro */
+.md-juice[data-theme="dark"] .markdown-body,
+.md-juice.juice-dark .markdown-body {
+    color-scheme: dark;
+}
+
+/* Smooth color transitions for theming */
+/* Standard Tailwind CSS transition values */
+.md-juice .markdown-body,
+.md-juice .markdown-body * {
+	transition-property: color, background, background-color, border-color;
+	transition-duration: var(--mdj-transition, 150ms);
+	transition-timing-function: var(--mdj-transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Optional opt‑out helper (apply to a subtree if needed) */
+.md-juice .juice-no-transition,
+.md-juice .juice-no-transition * {
+    transition-property: color, background-color, border-color;
+    transition-duration: 0ms !important;
+}
+
+/* Headings */
+.md-juice .markdown-body h1,
+.md-juice .markdown-body h2,
+.md-juice .markdown-body h3,
+.md-juice .markdown-body h4,
+.md-juice .markdown-body h5,
+.md-juice .markdown-body h6 {
+	margin-top: 1.5rem;
+	margin-bottom: 1rem;
+	font-weight: 600;
+	line-height: 1.25;
+	color: var(--mdj-text-primary-color);
+}
+
+.md-juice .markdown-body h1 {
+	font-size: 2em;
+	padding-bottom: .3em;
+	border-bottom: 1px solid var(--mdj-border-color);
+}
+
+.md-juice .markdown-body h2 {
+	font-size: 1.5em;
+	padding-bottom: .3em;
+	border-bottom: 1px solid var(--mdj-border-color);
+}
+
+.md-juice .markdown-body h3 {
+	font-size: 1.25em;
+}
+
+.md-juice .markdown-body h4 {
+	font-size: 1em;
+}
+
+.md-juice .markdown-body h5 {
+	font-size: .875em;
+}
+
+.md-juice .markdown-body h6 {
+	font-size: .85em;
+	color: var(--mdj-text-secondary-color);
+}
+
+/* Anchors (show link icon on hover) */
+.md-juice .markdown-body .anchor {
+	float: left;
+	padding-right: .25rem;
+	margin-left: -20px;
+	line-height: 1;
+}
+
+.md-juice .markdown-body h1:hover .anchor,
+.md-juice .markdown-body h2:hover .anchor,
+.md-juice .markdown-body h3:hover .anchor,
+.md-juice .markdown-body h4:hover .anchor,
+.md-juice .markdown-body h5:hover .anchor,
+.md-juice .markdown-body h6:hover .anchor {
+	text-decoration: none;
+}
+
+.md-juice .markdown-body .anchor .octicon-link {
+	visibility: hidden;
+	color: var(--mdj-text-primary-color);
+}
+
+.md-juice .markdown-body h1:hover .anchor .octicon-link,
+.md-juice .markdown-body h2:hover .anchor .octicon-link,
+.md-juice .markdown-body h3:hover .anchor .octicon-link {
+	visibility: visible;
+}
+
+/* Text content */
+.md-juice .markdown-body p {
+	margin: 0 0 1rem 0;
+}
+
+.md-juice .markdown-body small {
+	font-size: 90%;
+}
+
+.md-juice .markdown-body mark {
+	background-color: var(--mdj-mark-bg);
+	color: var(--mdj-text-primary-color);
+}
+
+/* Links */
+.md-juice .markdown-body a {
+	color: var(--mdj-link-color);
+	text-decoration: none;
+	background-color: transparent;
+}
+
+.md-juice .markdown-body a:hover {
+	text-decoration: underline;
+}
+
+/* Lists */
+.md-juice .markdown-body ul,
+.md-juice .markdown-body ol {
+	padding-left: 2em;
+	margin: 0 0 1rem 0;
+}
+
+.md-juice .markdown-body ul {
+	list-style: disc outside;
+}
+
+.md-juice .markdown-body ol {
+	list-style: decimal outside;
+}
+
+.md-juice .markdown-body li+li {
+	margin-top: .25em;
+}
+
+.md-juice .markdown-body ul li::marker {
+	color: var(--mdj-text-secondary-color);
+}
+
+.md-juice .markdown-body ol li::marker {
+	color: var(--mdj-text-secondary-color);
+}
+
+.md-juice .markdown-body ul ul li::marker {
+	color: var(--mdj-text-secondary-color);
+}
+
+.md-juice .markdown-body ol ol li::marker {
+	color: var(--mdj-text-secondary-color);
+}
+
+/* Blockquote */
+.md-juice .markdown-body blockquote {
+	margin: 0 0 1rem 0;
+	padding: 0 1em;
+	color: var(--mdj-text-secondary-color);
+	border-left: .25em solid var(--mdj-border-color);
+}
+
+/* Horizontal rule */
+.md-juice .markdown-body hr {
+	height: var(--mdj-hr-height);
+	border: 0;
+	background-color: var(--mdj-border-color);
+	margin: 1.5rem 0;
+}
+
+/* Inner table wrapper to prevent overflow */
+.md-juice .markdown-body {
+  overflow-x: hidden;
+}
+
+/* Inner table wrapper to enable horizontal scrolling */
+.md-juice .markdown-body table {
+  display: block;              	
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-collapse: collapse;
+  margin: 0 0 1rem 0;
+  overflow: auto;              
+  -webkit-overflow-scrolling: touch;
+  table-layout: fixed;          
+}
+
+.md-juice .markdown-body th {
+	background-color: var(--mdj-table-th-bg);
+}
+
+.md-juice .markdown-body th,
+.md-juice .markdown-body td {
+	padding: 6px 13px;
+	border: 1px solid var(--mdj-border-color);
+}
+
+.md-juice .markdown-body tr {
+	background-color: var(--mdj-table-tr-bg);
+}
+.markdown-body tr:nth-child(2n) { 
+	background-color: var(--mdj-table-tr2-bg); 
+}
+
+/* Images */
+.md-juice .markdown-body img {
+	max-width: 100%;
+	border-style: none;
+}
+
+/* Code and preformatted */
+.md-juice .markdown-body code,
+.md-juice .markdown-body kbd,
+.md-juice .markdown-body pre,
+.md-juice .markdown-body samp {
+	font-family: var(--mdj-monospace);
+	font-size: 0.95em;
+}
+
+.md-juice .markdown-body pre {
+	overflow: auto;
+	padding: .75rem;
+	background: var(--mdj-code-bg);
+	border-radius: var(--mdj-radius);
+}
+
+.md-juice .markdown-body pre code {
+	display: block;
+}
+
+.md-juice .markdown-body code {
+	background: transparent;
+	padding: .15rem .3rem;
+	border-radius: 4px;
+	background-color: var(--mdj-code-bg);
+}
+
+/* Keyboard key */
+.md-juice .markdown-body kbd {
+	display: inline-block;
+	padding: .25rem;
+	font-size: .85em;
+	line-height: 1;
+	color: var(--mdj-text-primary-color);
+	background: var(--mdj-kbd-bg);
+	border: 1px solid var(--mdj-kbd-border);
+	border-radius: var(--mdj-radius);
+}
+
+/* Forms and details */
+.md-juice .markdown-body details {
+	display: block;
+	margin: 0 0 1rem 0;
+}
+
+.md-juice .markdown-body summary {
+	cursor: pointer;
+}
+
+/* Accessibility focus */
+.md-juice .markdown-body a:focus,
+.md-juice .markdown-body [role=button]:focus,
+.md-juice .markdown-body input:focus,
+.md-juice .markdown-body textarea:focus {
+	outline: var(--mdj-focus-outline);
+	outline-offset: -2px;
+}
+
+/* Small utility helpers used by markdown output */
+.md-juice .markdown-body .absent {
+	color: #d1242f;
+}
+
+.md-juice .markdown-body .emoji {
+	vertical-align: text-top;
+	background-color: transparent;
+}
+
+/* ------------------- OPTIONAL EXTRAS (GitHub-like) ------------------- */
+
+/* Permalink icon for headings (uses the same SVG mask approach) */
+.md-juice .markdown-body .anchor .octicon-link:before {
+	width: 16px;
+	height: 16px;
+	content: '';
+	display: inline-block;
+	background-color: currentColor;
+	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z'/%3E%3C/svg%3E");
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z'/%3E%3C/svg%3E");
+}
+
+.md-juice .markdown-body h1:hover .anchor .octicon-link,
+.md-juice .markdown-body h2:hover .anchor .octicon-link,
+.md-juice .markdown-body h3:hover .anchor .octicon-link,
+.md-juice .markdown-body h4:hover .anchor .octicon-link,
+.md-juice .markdown-body h5:hover .anchor .octicon-link,
+.md-juice .markdown-body h6:hover .anchor .octicon-link {
+	visibility: visible;
+}
+
+/* Minimal syntax highlighting classes (map from original .pl-* classes) */
+.md-juice .markdown-body .pl-c {
+	color: var(--mdj-syntax-comment);
+}
+
+.md-juice .markdown-body .pl-k {
+	color: var(--mdj-syntax-keyword);
+}
+
+.md-juice .markdown-body .pl-en,
+.md-juice .markdown-body .pl-e {
+	color: var(--mdj-syntax-constant);
+}
+
+.md-juice .markdown-body .pl-smi,
+.md-juice .markdown-body .pl-s {
+	color: var(--mdj-syntax-function);
+}
+
+.md-juice .markdown-body .pl-sr {
+	color: var(--mdj-syntax-string);
+}
+
+.md-juice .markdown-body .pl-v {
+	color: var(--mdj-syntax-number);
+}
+
+.md-juice .markdown-body .pl-mh {
+	color: var(--mdj-syntax-type);
+}
+
+.md-juice .markdown-body .pl-mi {
+	font-style: italic;
+	color: var(--mdj-text-primary-color);
+}
+
+.md-juice .markdown-body .pl-md {
+	background-color: rgba(255, 235, 233, 0.8);
+	color: #82071e;
+}
+
+/* Alert variants (requires TWO classes: base + variant)
+   Usage:
+     <blockquote class="markdown-alert markdown-alert-warning">
+       <p class="markdown-alert-title">...</p>
+       <p>Body...</p>
+     </blockquote> */
+.md-juice .markdown-body .markdown-alert {
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    color: inherit;
+    border-left: .25em solid var(--mdj-border-color);
+}
+
+.md-juice .markdown-body .markdown-alert .markdown-alert-title {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.md-juice .markdown-body .markdown-alert.markdown-alert-note {
+    border-left-color: var(--mdj-link-color);
+    color: var(--mdj-link-color);
+}
+
+.md-juice .markdown-body .markdown-alert.markdown-alert-important {
+    border-left-color: var(--mdj-syntax-type);
+    color: var(--mdj-syntax-type);
+}
+
+.md-juice .markdown-body .markdown-alert.markdown-alert-warning {
+    border-left-color: #9a6700;
+    color: #9a6700;
+}
+
+.md-juice .markdown-body .markdown-alert.markdown-alert-tip {
+    border-left-color: #1a7f37;
+    color: #1a7f37;
+}
+
+.md-juice .markdown-body .markdown-alert.markdown-alert-caution {
+    border-left-color: #cf222e;
+    color: #d1242f;
+}
+
+/* Task list tweaks */
+.md-juice .markdown-body .task-list-item {
+	list-style-type: none;
+}
+
+.md-juice .markdown-body .task-list-item-checkbox {
+	margin: 0 .2em .25em -1.4em;
+	vertical-align: middle;
+}
+
+.md-juice .markdown-body .task-list-item+.task-list-item {
+	margin-top: .25rem;
+}
+
+/* Footnotes */
+.md-juice .markdown-body .footnotes {
+    font-size: 0.75em; /* relative to body font-size (≈12px si base=16px) */
+    color: var(--mdj-text-secondary-color);
+    border-top: 1px solid var(--mdj-border-color);
+    margin-top: 1.5rem;
+    padding-top: 0.75rem;
+}
+
+.md-juice .markdown-body .footnotes ol {
+    margin: 0;
+    padding-left: 1.25em;
+}
+
+.md-juice .markdown-body .footnotes li {
+    position: relative;
+    margin: 0.4em 0;
+}
+
+.md-juice .markdown-body .footnotes p {
+    margin: 0.25em 0;
+}
+
+.md-juice .markdown-body .footnotes li:target::before {
+    content: '';
+    position: absolute;
+    top: -0.4rem;
+    right: -0.4rem;
+    bottom: -0.4rem;
+    left: -1.0rem;
+    pointer-events: none;
+    border: 2px solid var(--mdj-link-color);
+    border-radius: 6px;
+}
+
+/* Accent for form controls (checkbox, radio, etc.) */
+.md-juice .markdown-body input[type="checkbox"],
+.md-juice .markdown-body input[type="radio"],
+.md-juice .markdown-body progress {
+    accent-color: var(--mdj-accent-color);
+}
+
+} /* end @layer md-juice */
+
+/* End of optional extras */

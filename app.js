@@ -59,7 +59,7 @@ const i18n = {
     pdfExported: "Na impressão, selecione “Salvar como PDF”.",
     docxExported: "DOCX editável exportado.",
     exportError: "Não foi possível exportar. Tente novamente.",
-    replaceMdTemplate: "Carregar o modelo substituirá o Markdown atual. Deseja continuar?",
+    replaceMdTemplate: "O modelo substitui o texto do editor. O tema escolhido continua o mesmo. Continuar?",
     templateLoaded: "Modelo carregado.",
     invalidTheme: "Tema inválido. Consulte list_document_themes.",
     selectCss: "selecione um arquivo .css.",
@@ -134,7 +134,7 @@ const i18n = {
     pdfExported: "When printing, select \"Save as PDF\".",
     docxExported: "Editable DOCX exported.",
     exportError: "Could not export. Try again.",
-    replaceMdTemplate: "Loading the template will replace the current Markdown. Do you want to continue?",
+    replaceMdTemplate: "The template replaces the editor text. Your selected theme stays the same. Continue?",
     templateLoaded: "Template loaded.",
     invalidTheme: "Invalid theme. Check list_document_themes.",
     selectCss: "select a .css file.",
@@ -250,7 +250,9 @@ if($('clear-imported-css'))$('clear-imported-css').onclick=()=>{if(!imported.len
 function updateExportHint(){$('export-hint').textContent={pdf:t('exportHintPDF'),html:t('exportHintHTML'),docx:t('exportHintDOCX')}[$('format').value];}
 $('format').onchange=()=>updateExportHint();
 $('export').onclick=async()=>{const button=$('export');button.disabled=true;try{const format=$('format').value;const doc=await waitForDocument();if(format==='html'){download(currentDocument,filename()+'.html','text/html;charset=utf-8');toast(t('htmlExported'));}else if(format==='pdf'){document.title=filename();$('preview').contentWindow.focus();$('preview').contentWindow.print();setTimeout(()=>document.title='Markdown Studio',500);toast(t('pdfExported'));}else{const result=await window.exportWord(doc,{title:filename(),paper:$('paper').value,margin:Number($('margin').value)});download(result.blob,filename()+'.docx');toast(result.warnings.length?'DOCX: '+result.warnings.join(' '):t('docxExported'));}}catch(err){console.error(err);toast(err.message||t('exportError'));}finally{button.disabled=false;}};
-window.REPORT_TEMPLATES.forEach((x,i)=>$('template').append(new Option((i+1)+'. '+templateLabel(x.path),String(i))));$('template').addEventListener('change',()=>{const select=$('template'),index=select.value;if(index==='')return;if(!confirm(t('replaceMdTemplate'))){select.value='';return;}const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));select.value='';});
+window.REPORT_TEMPLATES.forEach((x,i)=>$('template').append(new Option((i+1)+'. '+templateLabel(x.path),String(i))));// só pergunta quando há texto do usuário a perder: com o documento de exemplo intocado não há
+function editorUntouched(){const value=$('markdown').value;return !value.trim()||value===i18n.pt.defaultMd||value===i18n.en.defaultMd;}
+$('template').addEventListener('change',()=>{const select=$('template'),index=select.value;if(index==='')return;if(!editorUntouched()&&!confirm(t('replaceMdTemplate'))){select.value='';return;}const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));select.value='';});
 // source list loop removed
 $('help').onclick=()=>$('help-dialog').showModal();$('close-help').onclick=()=>$('help-dialog').close();$('help-dialog').addEventListener('click',e=>{if(e.target===$('help-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});
 window.addEventListener('beforeunload',e=>{if(!storageAvailable&&dirty){e.preventDefault();e.returnValue='';}});

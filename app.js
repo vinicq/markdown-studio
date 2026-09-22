@@ -38,6 +38,8 @@ const i18n = {
     footerProcess: "Seus arquivos são processados localmente. Imagens externas podem acessar a internet.",
     helpTitle: "Seu documento, do início ao fim",
     closeHelp: "Fechar",
+    confirmOk: "OK",
+    cancel: "Cancelar",
     helpDesc: "Abra um arquivo .md ou escreva no editor. Escolha um tema, confira a prévia e exporte no formato desejado.",
     helpHtmlDesc: "Arquivo completo com CSS incorporado. Imagens por URL continuam externas.",
     helpPdfDesc: "Abre a impressão do navegador. Escolha “Salvar como PDF”, habilite os gráficos de plano de fundo e desabilite cabeçalhos e rodapés do navegador.",
@@ -113,6 +115,8 @@ const i18n = {
     footerProcess: "Your files are processed locally. External images may access the internet.",
     helpTitle: "Your document, from start to finish",
     closeHelp: "Close",
+    confirmOk: "OK",
+    cancel: "Cancel",
     helpDesc: "Open a .md file or type in the editor. Choose a theme, check the preview and export in the desired format.",
     helpHtmlDesc: "Complete file with embedded CSS. URL images remain external.",
     helpPdfDesc: "Opens the browser's print dialog. Choose \"Save as PDF\", enable background graphics and disable browser headers and footers.",
@@ -201,7 +205,7 @@ let imported=Array.isArray(stored.imported)?stored.imported.filter(x=>typeof x.i
 let themes=[...window.BUILTIN_THEMES,...imported];
 let activeId=themes.some(x=>x.id===stored.theme)?stored.theme:'sindresorhus/github-markdown-light.css';
 let currentDocument='',renderTimer,saveTimer,toastTimer,revision=0,framePromise=Promise.resolve(),dirty=false;
-let themeFilter='todos';
+let themeFilter='todos',loadedTemplate='';
 
 $('markdown').value=typeof stored.markdown==='string'?stored.markdown:t('defaultMd');
 $('custom-css').value=typeof stored.extra==='string'?stored.extra:'';
@@ -241,18 +245,29 @@ $('markdown').addEventListener('input',scheduleRender);$('custom-css').addEventL
 function activateTab(isCss){$('md-tab').classList.toggle('active',!isCss);$('css-tab').classList.toggle('active',isCss);$('md-tab').setAttribute('aria-selected',String(!isCss));$('css-tab').setAttribute('aria-selected',String(isCss));$('md-tab').tabIndex=isCss?-1:0;$('css-tab').tabIndex=isCss?0:-1;$('markdown-pane').hidden=isCss;$('css-pane').hidden=!isCss;$('editor-kind').textContent=isCss?'.css':'.md';}
 $('md-tab').onclick=()=>activateTab(false);$('css-tab').onclick=()=>activateTab(true);for(const id of ['md-tab','css-tab'])$(id).onkeydown=e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const css=e.key==='End'||(e.key!=='Home'&&id==='md-tab');activateTab(css);$(css?'css-tab':'md-tab').focus();}};
 for(const id of ['markdown','custom-css'])$(id).addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const el=e.target;el.setRangeText('  ',el.selectionStart,el.selectionEnd,'end');scheduleRender();}});
-$('open-md').onclick=()=>$('md-file').click();$('md-file').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>5*1024*1024)throw Error(t('fileUpTo5mb'));if(dirty&&!confirm(t('replaceText')))return;$('markdown').value=await file.text();$('filename').value=file.name.replace(/\.(md|markdown|txt)$/i,'');dirty=true;activateTab(false);render();save();toast(t('mdOpened'));}catch(err){toast(err.message);}finally{e.target.value='';}};
+$('open-md').onclick=()=>$('md-file').click();$('md-file').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>5*1024*1024)throw Error(t('fileUpTo5mb'));if(dirty&&!await ask(t('replaceText')))return;$('markdown').value=await file.text();$('filename').value=file.name.replace(/\.(md|markdown|txt)$/i,'');dirty=true;activateTab(false);render();save();toast(t('mdOpened'));}catch(err){toast(err.message);}finally{e.target.value='';}};
 $('save-md').onclick=()=>{download($('markdown').value,filename()+'.md','text/markdown;charset=utf-8');dirty=false;};
 if($('import-css'))$('import-css').onclick=()=>$('css-files').click();$('css-files').onchange=async e=>{const files=[...e.target.files];let count=0,errors=[];for(const file of files){try{if(!/\.css$/i.test(file.name))throw Error(file.name+': '+t('selectCss'));if(file.size>1024*1024)throw Error(file.name+': '+t('limitCss'));const css=await file.text();if(!css.trim())throw Error(file.name+': '+t('emptyFile'));const id='custom:'+(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));const same=themes.filter(x=>x.name===file.name||x.name.startsWith(file.name+' (')).length;const theme={id,name:file.name+(same?' ('+(same+1)+')':''),css,custom:true,group:t('yourThemes')};imported.push(theme);themes.push(theme);activeId=id;count++;}catch(err){errors.push(err.message);}}updateOptions();render();save();toast([count?`${count} ${count===1?t('themeAdded'):t('themesAdded')}.`:'',...errors,!storageAvailable?t('storageFull'):''].filter(Boolean).join(' '));e.target.value='';};
-if($('remove-css'))$('remove-css').onclick=()=>{const x=currentTheme();if(!x.custom||!confirm(t('removeThemeBrowser', x.name)))return;imported=imported.filter(y=>y.id!==activeId);themes=[...window.BUILTIN_THEMES,...imported];activeId='sindresorhus/github-markdown-light.css';updateOptions();render();save();toast(t('themeRemoved'));};
+if($('remove-css'))$('remove-css').onclick=async()=>{const x=currentTheme();if(!x.custom||!await ask(t('removeThemeBrowser', x.name)))return;imported=imported.filter(y=>y.id!==activeId);themes=[...window.BUILTIN_THEMES,...imported];activeId='sindresorhus/github-markdown-light.css';updateOptions();render();save();toast(t('themeRemoved'));};
 
-if($('clear-imported-css'))$('clear-imported-css').onclick=()=>{if(!imported.length){toast(t('noImportedCss'));return;}if(!confirm(t('removeAllThemes')))return;imported=[];themes=[...window.BUILTIN_THEMES];activeId='sindresorhus/github-markdown-light.css';updateOptions();render();save();toast(t('allThemesRemoved'));};
+if($('clear-imported-css'))$('clear-imported-css').onclick=async()=>{if(!imported.length){toast(t('noImportedCss'));return;}if(!await ask(t('removeAllThemes')))return;imported=[];themes=[...window.BUILTIN_THEMES];activeId='sindresorhus/github-markdown-light.css';updateOptions();render();save();toast(t('allThemesRemoved'));};
 function updateExportHint(){$('export-hint').textContent={pdf:t('exportHintPDF'),html:t('exportHintHTML'),docx:t('exportHintDOCX')}[$('format').value];}
 $('format').onchange=()=>updateExportHint();
 $('export').onclick=async()=>{const button=$('export');button.disabled=true;try{const format=$('format').value;const doc=await waitForDocument();if(format==='html'){download(currentDocument,filename()+'.html','text/html;charset=utf-8');toast(t('htmlExported'));}else if(format==='pdf'){document.title=filename();$('preview').contentWindow.focus();$('preview').contentWindow.print();setTimeout(()=>document.title='Markdown Studio',500);toast(t('pdfExported'));}else{const result=await window.exportWord(doc,{title:filename(),paper:$('paper').value,margin:Number($('margin').value)});download(result.blob,filename()+'.docx');toast(result.warnings.length?'DOCX: '+result.warnings.join(' '):t('docxExported'));}}catch(err){console.error(err);toast(err.message||t('exportError'));}finally{button.disabled=false;}};
 window.REPORT_TEMPLATES.forEach((x,i)=>$('template').append(new Option((i+1)+'. '+templateLabel(x.path),String(i))));// só pergunta quando há texto do usuário a perder: com o documento de exemplo intocado não há
 function editorUntouched(){const value=$('markdown').value;return !value.trim()||value===i18n.pt.defaultMd||value===i18n.en.defaultMd;}
-$('template').addEventListener('change',()=>{const select=$('template'),index=select.value;if(index==='')return;if(!editorUntouched()&&!confirm(t('replaceMdTemplate'))){select.value='';return;}const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));select.value='';});
+// janela do próprio app no lugar do confirm() do navegador. Clique fora não fecha, porque
+// <dialog> aberto com showModal() ignora clique no backdrop enquanto ninguém tratar esse clique.
+// Esc continua valendo como Cancelar: sem isso, quem navega por teclado fica preso na janela.
+function ask(message){const dialog=$('confirm-dialog');$('confirm-text').textContent=message;dialog.showModal();
+return new Promise(resolve=>{
+const finish=answer=>{$('confirm-ok').removeEventListener('click',onOk);$('confirm-cancel').removeEventListener('click',onCancel);dialog.removeEventListener('cancel',onEscape);dialog.close();resolve(answer);};
+const onOk=()=>finish(true),onCancel=()=>finish(false),onEscape=event=>{event.preventDefault();finish(false);};
+$('confirm-ok').addEventListener('click',onOk);$('confirm-cancel').addEventListener('click',onCancel);dialog.addEventListener('cancel',onEscape);});}
+$('template').addEventListener('change',async()=>{const select=$('template'),index=select.value;if(index==='')return;
+// cancelar volta para o modelo que está carregado, para o seletor sempre mostrar o que está no editor
+if(!editorUntouched()&&!await ask(t('replaceMdTemplate'))){select.value=loadedTemplate;return;}
+const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');loadedTemplate=index;dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));});
 // source list loop removed
 $('help').onclick=()=>$('help-dialog').showModal();$('close-help').onclick=()=>$('help-dialog').close();$('help-dialog').addEventListener('click',e=>{if(e.target===$('help-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});
 window.addEventListener('beforeunload',e=>{if(!storageAvailable&&dirty){e.preventDefault();e.returnValue='';}});

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Medicao de temas</title></head>
+<body>
+<p id="status">medindo…</p>
+<iframe id="probe" style="width:900px;height:400px;border:1px solid #ccc"></iframe>
+<pre id="out"></pre>
+<script src="../themes.js"></script>
+<script>
+// Renderiza cada tema num iframe e le o estilo computado real, do jeito que o app renderiza.
+// O navegador resolve variaveis CSS, @media, cascata e especificidade; regex nao resolve.
+const SAMPLE = `<h1 id="h">Titulo</h1><p id="p">Texto <a id="a" href="#x">link</a> e <code id="c">codigo</code>.</p>
+<blockquote id="q">Citacao</blockquote><table><tbody><tr><td id="td">celula</td></tr></tbody></table>`;
+
+function luminance(rgb){
+  const f = c => { c/=255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4); };
+  return 0.2126*f(rgb[0]) + 0.7152*f(rgb[1]) + 0.0722*f(rgb[2]);
+}
+function parseRgb(v){
+  const m = String(v).match(/rgba?\(([^)]+)\)/);
+  if(!m) return null;
+  const p = m[1].split(/[,\s/]+/).filter(Boolean).map(parseFloat);
+  if(p.length<3) return null;
+  if(p.length>3 && p[3]===0) return null; // transparente
+  return [p[0],p[1],p[2]];
+}
+function contrast(a,b){
+  const la=luminance(a), lb=luminance(b);
+  return (Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05);
+}
+
+async function measure(theme, BASE){
+  const wrapper = theme.group==='aruizcastillo/md-juice' ? 'md-juice'
+    : theme.group==='sindresorhus/github-markdown-css' ? 'markdown-body'
+    : 'markdown-body md-juice';
+  const css = theme.css.replace(/<\/style/gi,'<\\/style');
+  const doc = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>${BASE}\n${css}</style></head>`
+    + `<body><article id="document" class="${wrapper}">${SAMPLE}</article></body></html>`;
+  const frame = document.getElementById('probe');
+  await new Promise(resolve => { frame.onload = resolve; frame.srcdoc = doc; });
+  const d = frame.contentDocument, w = frame.contentWindow;
+  const art = d.getElementById('document');
+  const cs = el => el ? w.getComputedStyle(el) : null;
+  // fundo efetivo: sobe a arvore ate achar cor nao transparente
+  let bgEl = art, bg = null;
+  while (bgEl && !bg) { bg = parseRgb(cs(bgEl).backgroundColor); bgEl = bgEl.parentElement; }
+  if (!bg) bg = parseRgb(cs(d.body).backgroundColor) || [255,255,255];
+  const fg = parseRgb(cs(d.getElementById('p')).color) || [0,0,0];
+  const font = cs(d.getElementById('p')).fontFamily.toLowerCase();
+  const codeBg = parseRgb(cs(d.getElementById('c')).backgroundColor);
+  const linkColor = parseRgb(cs(d.getElementById('a')).color);
+  const lum = luminance(bg);
+  return {
+    id: theme.id, name: theme.name, group: theme.group,
+    bg, fg, lum: +lum.toFixed(4), ratio: +contrast(fg,bg).toFixed(2),
+    font: font.slice(0,70),
+    serif: /\bserif\b/.test(font) && !/sans-serif/.test(font),
+    mono: /monospace|consolas|courier|menlo|monaco|mono\b/.test(font),
+    codeBg, linkColor,
+  };
+}
+
+(async () => {
+  const BASE = (await (await fetch('../app.js')).text()).match(/const BASE=`([\s\S]*?)`;/)[1];
+  const results = [];
+  // themes.js busca o manifest por caminho relativo ao documento, e daqui (scripts/) isso falha:
+  // carrega por conta propria e remove repetidos por id.
+  const dynamic = await (await fetch('../themes/manifest.json')).json();
+  const seen = new Set();
+  const themes = window.BUILTIN_THEMES.concat(dynamic).filter(t => !seen.has(t.id) && seen.add(t.id));
+  for (let i=0;i<themes.length;i++){
+    results.push(await measure(themes[i], BASE));
+    document.getElementById('status').textContent = `medindo ${i+1}/${themes.length}`;
+  }
+  document.getElementById('status').textContent = `pronto: ${results.length} temas`;
+  document.getElementById('out').textContent = JSON.stringify(results);
+  window.__RESULTS__ = results;
+})();
+</script>
+</body></html>

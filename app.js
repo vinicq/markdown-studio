@@ -15,7 +15,12 @@ const i18n = {
     exportBtn: "Download",
     appearance: "Aparência",
     docTheme: "Tema do documento",
-    filterThemes: "Filtrar temas...",
+    filterAll: "Todos",
+    filterLight: "Claro",
+    filterDark: "Escuro",
+    filterPaper: "Papel",
+    filterSerif: "Serifado",
+    filterContrast: "Alto contraste",
     page: "Página",
     format: "Formato",
     margin: "Margem",
@@ -85,7 +90,12 @@ const i18n = {
     exportBtn: "Download",
     appearance: "Appearance",
     docTheme: "Document theme",
-    filterThemes: "Filter themes...",
+    filterAll: "All",
+    filterLight: "Light",
+    filterDark: "Dark",
+    filterPaper: "Paper",
+    filterSerif: "Serif",
+    filterContrast: "High contrast",
     page: "Page",
     format: "Format",
     margin: "Margin",
@@ -191,6 +201,7 @@ let imported=Array.isArray(stored.imported)?stored.imported.filter(x=>typeof x.i
 let themes=[...window.BUILTIN_THEMES,...imported];
 let activeId=themes.some(x=>x.id===stored.theme)?stored.theme:'sindresorhus/github-markdown-light.css';
 let currentDocument='',renderTimer,saveTimer,toastTimer,revision=0,framePromise=Promise.resolve(),dirty=false;
+let themeFilter='todos';
 
 $('markdown').value=typeof stored.markdown==='string'?stored.markdown:t('defaultMd');
 $('custom-css').value=typeof stored.extra==='string'?stored.extra:'';
@@ -201,7 +212,16 @@ function toast(message){clearTimeout(toastTimer);$('toast').textContent=message;
 function currentTheme(){return themes.find(x=>x.id===activeId)||themes[0];}
 function save(){clearTimeout(saveTimer);const data={lang,markdown:$('markdown').value,extra:$('custom-css').value,filename:$('filename').value,theme:activeId,imported,paper:$('paper').value,margin:$('margin').value};try{localStorage.setItem(KEY,JSON.stringify(data));storageAvailable=true;$('save-status').textContent=t('saved');}catch{storageAvailable=false;$('save-status').textContent=t('noLocalSave');toast(t('couldNotSave'));}}
 function scheduleSave(){clearTimeout(saveTimer);$('save-status').textContent=t('saving');saveTimer=setTimeout(save,600);}
-function updateOptions(filterText = ''){const select=$('theme');select.replaceChildren();const lowerFilter=filterText.toLowerCase();const filteredThemes=themes.filter(x=>x.name.toLowerCase().includes(lowerFilter)||x.id.toLowerCase().includes(lowerFilter));filteredThemes.forEach(x=>{select.append(new Option(x.name,x.id));});select.value=activeId;if(select.selectedIndex===-1&&filteredThemes.length>0){select.value=filteredThemes[0].id;activeId=select.value;render();save();} $('theme-count').textContent=filteredThemes.length+' CSS';}
+function themeMatches(theme){if(themeFilter==='todos')return true;if(themeFilter==='claro'||themeFilter==='escuro')return theme.tone===themeFilter;return (theme.tags||[]).includes(themeFilter);}
+function updateOptions(){const select=$('theme');select.replaceChildren();
+// o tema aplicado continua na lista mesmo fora do filtro, senão filtrar trocaria o tema do documento sem pedir
+const visible=themes.filter(x=>themeMatches(x)||x.id===activeId);
+const position=new Map(themes.map((x,i)=>[x.id,i+1]));
+visible.forEach(x=>{select.append(new Option(position.get(x.id)+'. '+x.name,x.id));});
+select.value=activeId;
+$('theme-count').textContent=visible.length+' CSS';
+document.querySelectorAll('#theme-filters [data-filter]').forEach(button=>{const on=button.dataset.filter===themeFilter;button.classList.toggle('active',on);button.setAttribute('aria-pressed',String(on));});}
+function templateLabel(templatePath){const base=templatePath.split('/').pop().replace(/\.md$/i,'');const parts=base.split('-exam-report-template_');return parts.length===2?parts[0]+' · '+parts[1].replace(/_/g,' '):base.replace(/[-_]/g,' ');}
 function updateThemeInfo(){const x=currentTheme();if($('remove-css'))$('remove-css').hidden=!x.custom;if($('theme-source')){$('theme-source').hidden=!x.source;if(x.source)$('theme-source').href=x.source;}$('sample-name').textContent=x.name;$('preview-theme').textContent=x.name;}
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function cleanMarkdown(text){return text.replace(/^\uFEFF/,'').replace(/^---\s*\r?\n[\s\S]*?\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/,'');}
@@ -217,7 +237,7 @@ function scheduleRender(){clearTimeout(renderTimer);renderTimer=setTimeout(rende
 function filename(){return ($('filename').value.trim()||t('document')).replace(/[<>:"/\\|?*\x00-\x1f]/g,'-').replace(/\.(md|html|pdf|docx)$/i,'');}
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 async function waitForDocument(){await render();await framePromise;const doc=$('preview').contentDocument;if(!doc?.getElementById('document'))throw Error(t('notReady'));if(doc.fonts)await doc.fonts.ready;await Promise.all([...doc.images].map(img=>img.complete?Promise.resolve():Promise.race([new Promise(resolve=>{img.onload=resolve;img.onerror=resolve;}),new Promise(resolve=>setTimeout(resolve,3500))])));return doc;}
-$('markdown').addEventListener('input',scheduleRender);$('custom-css').addEventListener('input',scheduleRender);$('filename').addEventListener('input',scheduleRender);for(const id of ['paper','margin'])$(id).addEventListener('change',()=>{render();save();});$('theme').addEventListener('change',()=>{activeId=$('theme').value;render();save();});if($('theme-filter'))$('theme-filter').addEventListener('input', e => { updateOptions(e.target.value); });
+$('markdown').addEventListener('input',scheduleRender);$('custom-css').addEventListener('input',scheduleRender);$('filename').addEventListener('input',scheduleRender);for(const id of ['paper','margin'])$(id).addEventListener('change',()=>{render();save();});$('theme').addEventListener('change',()=>{activeId=$('theme').value;render();save();});document.querySelectorAll('#theme-filters [data-filter]').forEach(button=>{button.addEventListener('click',()=>{themeFilter=button.dataset.filter;updateOptions();});});
 function activateTab(isCss){$('md-tab').classList.toggle('active',!isCss);$('css-tab').classList.toggle('active',isCss);$('md-tab').setAttribute('aria-selected',String(!isCss));$('css-tab').setAttribute('aria-selected',String(isCss));$('md-tab').tabIndex=isCss?-1:0;$('css-tab').tabIndex=isCss?0:-1;$('markdown-pane').hidden=isCss;$('css-pane').hidden=!isCss;$('editor-kind').textContent=isCss?'.css':'.md';}
 $('md-tab').onclick=()=>activateTab(false);$('css-tab').onclick=()=>activateTab(true);for(const id of ['md-tab','css-tab'])$(id).onkeydown=e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const css=e.key==='End'||(e.key!=='Home'&&id==='md-tab');activateTab(css);$(css?'css-tab':'md-tab').focus();}};
 for(const id of ['markdown','custom-css'])$(id).addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const el=e.target;el.setRangeText('  ',el.selectionStart,el.selectionEnd,'end');scheduleRender();}});
@@ -230,7 +250,7 @@ if($('clear-imported-css'))$('clear-imported-css').onclick=()=>{if(!imported.len
 function updateExportHint(){$('export-hint').textContent={pdf:t('exportHintPDF'),html:t('exportHintHTML'),docx:t('exportHintDOCX')}[$('format').value];}
 $('format').onchange=()=>updateExportHint();
 $('export').onclick=async()=>{const button=$('export');button.disabled=true;try{const format=$('format').value;const doc=await waitForDocument();if(format==='html'){download(currentDocument,filename()+'.html','text/html;charset=utf-8');toast(t('htmlExported'));}else if(format==='pdf'){document.title=filename();$('preview').contentWindow.focus();$('preview').contentWindow.print();setTimeout(()=>document.title='Markdown Studio',500);toast(t('pdfExported'));}else{const result=await window.exportWord(doc,{title:filename(),paper:$('paper').value,margin:Number($('margin').value)});download(result.blob,filename()+'.docx');toast(result.warnings.length?'DOCX: '+result.warnings.join(' '):t('docxExported'));}}catch(err){console.error(err);toast(err.message||t('exportError'));}finally{button.disabled=false;}};
-window.REPORT_TEMPLATES.forEach((x,i)=>$('template').append(new Option(x.path.split('/').pop().replace('.md',''),String(i))));$('template').addEventListener('change',()=>{const select=$('template'),index=select.value;if(index==='')return;if(!confirm(t('replaceMdTemplate'))){select.value='';return;}const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));select.value='';});
+window.REPORT_TEMPLATES.forEach((x,i)=>$('template').append(new Option((i+1)+'. '+templateLabel(x.path),String(i))));$('template').addEventListener('change',()=>{const select=$('template'),index=select.value;if(index==='')return;if(!confirm(t('replaceMdTemplate'))){select.value='';return;}const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));select.value='';});
 // source list loop removed
 $('help').onclick=()=>$('help-dialog').showModal();$('close-help').onclick=()=>$('help-dialog').close();$('help-dialog').addEventListener('click',e=>{if(e.target===$('help-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});
 window.addEventListener('beforeunload',e=>{if(!storageAvailable&&dirty){e.preventDefault();e.returnValue='';}});

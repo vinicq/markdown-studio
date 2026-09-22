@@ -17,9 +17,9 @@ To host on GitHub Pages, place the files from this package in the root of the re
 ## Features
 
 - Markdown editor with live preview in an isolated iframe.
-- 40 built-in CSS themes, automatically numbered and sorted.
+- 140 built-in CSS themes, numbered continuously in the picker.
 - Multi-language interface (Portuguese and English) with a quick toggle button.
-- Real-time search filter for themes.
+- Theme filter by category (light, dark, paper, serif, high contrast), derived from measuring each theme's CSS in a real browser.
 - Local persistence of text, additional CSS, selected theme, file name, and page settings. No synchronization between devices. Clearing site data erases local data.
 - Additional CSS editor, applied after the selected theme.
 - A4/Letter formats, with margins of 15/20/25 mm.
@@ -41,9 +41,12 @@ To distribute a new theme as part of the site, place the CSS file in `themes/` a
 
 ```sh
 node generate_theme_manifest.js
+node scripts/classify-themes.mjs
 ```
 
-This command automatically scans the folder, formats the theme names with continuous numbering, and updates `themes/manifest.json`. The application fetches this manifest dynamically on load. 
+The first command scans the folder, derives a readable name from each file name, and updates `themes/manifest.json`. Files whose CSS is identical to a theme already bundled in `themes.js` are skipped, so the same theme is not listed twice. The application fetches this manifest dynamically on load.
+
+The second command assigns each theme a category (light or dark, plus paper, serif and high contrast). It renders every theme in headless Chrome and reads the computed background, text color and font, because reading the CSS with a regular expression gets it wrong: themes that set colors through CSS variables or `@media` blocks report the wrong background, and dark themes such as Dracula and Tokyo Night were classified as light that way. It needs Chrome installed, and honors `CHROME_PATH`. Re-running `generate_theme_manifest.js` preserves the categories already recorded.
 
 The CSS must be self-contained: remote `@import` and remote fonts are blocked by the document's policy. Use local fonts or data URLs. Relative references to images are not automatically embedded.
 
@@ -58,6 +61,7 @@ app.js                      Editor, preview, files, i18n, and persistence
 markdown-extensions.js      marked extensions: footnotes, heading IDs, definition lists, highlight, sub/superscript, emoji
 docx-export.js              Semantic conversion to Word
 generate_theme_manifest.js  Node script to generate manifest.json
+scripts/classify-themes.mjs Node script that measures each theme in Chrome and records its category
 themes.js                   Loads built-in themes and manifest
 themes/                     Folder containing all CSS themes and manifest.json
 templates.js                Built-in Markdown templates

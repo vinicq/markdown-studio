@@ -30,6 +30,12 @@ const i18n = {
     exportHintDOCX: "Word: texto editável e formatação compatível. O CSS é aproximado; layouts e efeitos podem mudar.",
     templatesTitle: "Modelos de documento",
     chooseTemplate: "Escolha um modelo",
+    tplAll: "Todos",
+    tplPentest: "Pentest",
+    tplWeb: "Web",
+    tplExploit: "Exploit",
+    tplDefense: "Defesa",
+    tplCommunity: "Comunidade",
     select: "Selecione…",
     mdTab: "Markdown",
     cssTab: "CSS do tema",
@@ -107,6 +113,12 @@ const i18n = {
     exportHintDOCX: "Word: editable text and compatible formatting. CSS is approximated; layouts and effects may change.",
     templatesTitle: "Document templates",
     chooseTemplate: "Choose a template",
+    tplAll: "All",
+    tplPentest: "Pentest",
+    tplWeb: "Web",
+    tplExploit: "Exploit",
+    tplDefense: "Defense",
+    tplCommunity: "Community",
     select: "Select...",
     mdTab: "Markdown",
     cssTab: "Theme CSS",
@@ -205,7 +217,7 @@ let imported=Array.isArray(stored.imported)?stored.imported.filter(x=>typeof x.i
 let themes=[...window.BUILTIN_THEMES,...imported];
 let activeId=themes.some(x=>x.id===stored.theme)?stored.theme:'sindresorhus/github-markdown-light.css';
 let currentDocument='',renderTimer,saveTimer,toastTimer,revision=0,framePromise=Promise.resolve(),dirty=false;
-let themeFilter='todos',loadedTemplate='';
+let themeFilter='todos',templateFilter='todos',loadedTemplate='';
 
 $('markdown').value=typeof stored.markdown==='string'?stored.markdown:t('defaultMd');
 loadThemeCss();
@@ -255,7 +267,16 @@ if($('clear-imported-css'))$('clear-imported-css').onclick=async()=>{if(!importe
 function updateExportHint(){$('export-hint').textContent={pdf:t('exportHintPDF'),html:t('exportHintHTML'),docx:t('exportHintDOCX')}[$('format').value];}
 $('format').onchange=()=>updateExportHint();
 $('export').onclick=async()=>{const button=$('export');button.disabled=true;try{const format=$('format').value;const doc=await waitForDocument();if(format==='html'){download(currentDocument,filename()+'.html','text/html;charset=utf-8');toast(t('htmlExported'));}else if(format==='pdf'){document.title=filename();$('preview').contentWindow.focus();$('preview').contentWindow.print();setTimeout(()=>document.title='Markdown Studio',500);toast(t('pdfExported'));}else{const result=await window.exportWord(doc,{title:filename(),paper:$('paper').value,margin:Number($('margin').value)});download(result.blob,filename()+'.docx');toast(result.warnings.length?'DOCX: '+result.warnings.join(' '):t('docxExported'));}}catch(err){console.error(err);toast(err.message||t('exportError'));}finally{button.disabled=false;}};
-window.REPORT_TEMPLATES.forEach((x,i)=>$('template').append(new Option((i+1)+'. '+templateLabel(x.path),String(i))));// só pergunta quando há texto do usuário a perder: com o documento de exemplo intocado não há
+const TEMPLATE_AREAS={OSCP:'pentest',OSEP:'pentest',OSWP:'pentest',OSCE:'pentest',OSWE:'web',OSWA:'web',OSED:'exploit',OSEE:'exploit',OSMR:'exploit',OSDA:'defesa',OSIR:'defesa',OSTH:'defesa'};
+function templateTags(templatePath){const base=templatePath.split('/').pop().replace(/.md$/i,'');const parts=base.split('-exam-report-template_');const tags=[TEMPLATE_AREAS[parts[0]]].filter(Boolean);if((parts[1]||'').split('_')[0]!=='OS')tags.push('comunidade');return tags;}
+function updateTemplateOptions(){const select=$('template');select.replaceChildren();
+const placeholder=new Option(t('select'),'');placeholder.dataset.i18n='select';select.append(placeholder);
+// o modelo carregado fica na lista mesmo fora do filtro, para o seletor sempre mostrar o que está no editor
+window.REPORT_TEMPLATES.forEach((x,i)=>{const index=String(i);if(templateFilter!=='todos'&&index!==loadedTemplate&&!templateTags(x.path).includes(templateFilter))return;select.append(new Option((i+1)+'. '+templateLabel(x.path),index));});
+select.value=loadedTemplate;
+document.querySelectorAll('#template-filters [data-filter]').forEach(button=>{const on=button.dataset.filter===templateFilter;button.classList.toggle('active',on);button.setAttribute('aria-pressed',String(on));});}
+document.querySelectorAll('#template-filters [data-filter]').forEach(button=>{button.addEventListener('click',()=>{templateFilter=button.dataset.filter;updateTemplateOptions();});});
+updateTemplateOptions();// só pergunta quando há texto do usuário a perder: com o documento de exemplo intocado não há
 function editorUntouched(){const value=$('markdown').value;return !value.trim()||value===i18n.pt.defaultMd||value===i18n.en.defaultMd;}
 // janela do próprio app no lugar do confirm() do navegador. Clique fora não fecha, porque
 // <dialog> aberto com showModal() ignora clique no backdrop enquanto ninguém tratar esse clique.
@@ -268,7 +289,7 @@ $('confirm-ok').addEventListener('click',onOk);$('confirm-cancel').addEventListe
 $('template').addEventListener('change',async()=>{const select=$('template'),index=select.value;if(index==='')return;
 // cancelar volta para o modelo que está carregado, para o seletor sempre mostrar o que está no editor
 if(!editorUntouched()&&!await ask(t('replaceMdTemplate'))){select.value=loadedTemplate;return;}
-const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');loadedTemplate=index;dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));});
+const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');loadedTemplate=index;updateTemplateOptions();dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));});
 // source list loop removed
 $('help').onclick=()=>$('help-dialog').showModal();$('close-help').onclick=()=>$('help-dialog').close();$('help-dialog').addEventListener('click',e=>{if(e.target===$('help-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});
 window.addEventListener('beforeunload',e=>{if(!storageAvailable&&dirty){e.preventDefault();e.returnValue='';}});

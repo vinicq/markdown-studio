@@ -25,6 +25,7 @@ To host on GitHub Pages, place the files from this package in the root of the re
 - A4/Letter formats, with margins of 15/20/25 mm.
 - Open and download Markdown, export to HTML and DOCX, print to PDF.
 - 18 document templates available for quick loading.
+- Markdown support beyond CommonMark/GFM: footnotes, heading IDs (auto-slug and `{#custom-id}`), definition lists, `==highlight==`, `^superscript^`, `~subscript~` and `:emoji:` shortcodes.
 
 ## Exports
 
@@ -54,6 +55,7 @@ The selectors `body`, HTML elements, `.markdown-body`, and `.md-juice` are suppo
 index.html                  Interface
 app.css                     Application style
 app.js                      Editor, preview, files, i18n, and persistence
+markdown-extensions.js      marked extensions: footnotes, heading IDs, definition lists, highlight, sub/superscript, emoji
 docx-export.js              Semantic conversion to Word
 generate_theme_manifest.js  Node script to generate manifest.json
 themes.js                   Loads built-in themes and manifest

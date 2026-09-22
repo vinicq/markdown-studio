@@ -12,7 +12,7 @@ const i18n = {
     openMd: "Abrir .md",
     saveMd: "Salvar .md",
     exportFormat: "Formato de exportação",
-    exportBtn: "Exportar",
+    exportBtn: "Download",
     appearance: "Aparência",
     docTheme: "Tema do documento",
     filterThemes: "Filtrar temas...",
@@ -26,7 +26,6 @@ const i18n = {
     templatesTitle: "Modelos de documento",
     chooseTemplate: "Escolha um modelo",
     select: "Selecione…",
-    loadTemplate: "Carregar modelo",
     mdTab: "Markdown",
     cssTab: "CSS adicional",
     cssPlaceholder: "/* Ajustes aplicados depois do tema selecionado */\nh1 { color: #166534; }",
@@ -55,7 +54,6 @@ const i18n = {
     pdfExported: "Na impressão, selecione “Salvar como PDF”.",
     docxExported: "DOCX editável exportado.",
     exportError: "Não foi possível exportar. Tente novamente.",
-    chooseTemplateToast: "Escolha um modelo.",
     replaceMdTemplate: "Carregar o modelo substituirá o Markdown atual. Deseja continuar?",
     templateLoaded: "Modelo carregado.",
     invalidTheme: "Tema inválido. Consulte list_document_themes.",
@@ -84,7 +82,7 @@ const i18n = {
     openMd: "Open .md",
     saveMd: "Save .md",
     exportFormat: "Export format",
-    exportBtn: "Export",
+    exportBtn: "Download",
     appearance: "Appearance",
     docTheme: "Document theme",
     filterThemes: "Filter themes...",
@@ -98,7 +96,6 @@ const i18n = {
     templatesTitle: "Document templates",
     chooseTemplate: "Choose a template",
     select: "Select...",
-    loadTemplate: "Load template",
     mdTab: "Markdown",
     cssTab: "Additional CSS",
     cssPlaceholder: "/* Adjustments applied after the selected theme */\nh1 { color: #166534; }",
@@ -127,7 +124,6 @@ const i18n = {
     pdfExported: "When printing, select \"Save as PDF\".",
     docxExported: "Editable DOCX exported.",
     exportError: "Could not export. Try again.",
-    chooseTemplateToast: "Choose a report template.",
     replaceMdTemplate: "Loading the template will replace the current Markdown. Do you want to continue?",
     templateLoaded: "Template loaded.",
     invalidTheme: "Invalid theme. Check list_document_themes.",
@@ -209,7 +205,7 @@ function updateOptions(filterText = ''){const select=$('theme');select.replaceCh
 function updateThemeInfo(){const x=currentTheme();if($('remove-css'))$('remove-css').hidden=!x.custom;if($('theme-source')){$('theme-source').hidden=!x.source;if(x.source)$('theme-source').href=x.source;}$('sample-name').textContent=x.name;$('preview-theme').textContent=x.name;}
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function cleanMarkdown(text){return text.replace(/^\uFEFF/,'').replace(/^---\s*\r?\n[\s\S]*?\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/,'');}
-const BASE=`html{color-scheme:light}body{margin:0;background:#fff;color:#24292f;font-family:Arial,sans-serif;font-size:16px;line-height:1.6}article{padding:32px;overflow-wrap:anywhere}h1,h2,h3,h4,h5,h6{line-height:1.3}h1{font-size:2em}h2{font-size:1.5em}img{max-width:100%;height:auto}table{border-collapse:collapse;max-width:100%;width:100%;font-size:inherit}th,td{border:1px solid #d0d7de;padding:8px 12px;text-align:left}pre{padding:16px;background:#f6f8fa;white-space:pre-wrap;overflow-wrap:anywhere}code{font-family:Consolas,monospace}blockquote{margin-left:0;padding-left:16px;border-left:3px solid #d0d7de;color:#59636e}a{color:#0969da}hr{border:0;border-top:1px solid #d0d7de;margin:24px 0}input[type=checkbox]{vertical-align:middle}li{margin:.25em 0}`;
+const BASE=`html{color-scheme:light}body{margin:0;background:#fff;color:#24292f;font-family:Arial,sans-serif;font-size:16px;line-height:1.6}article{padding:32px;overflow-wrap:anywhere}h1,h2,h3,h4,h5,h6{line-height:1.3}h1{font-size:2em}h2{font-size:1.5em}img{max-width:100%;height:auto}table{border-collapse:collapse;max-width:100%;width:100%;font-size:inherit}th,td{border:1px solid #d0d7de;padding:8px 12px}th:not([align]),td:not([align]){text-align:left}pre{padding:16px;background:#f6f8fa;white-space:pre-wrap;overflow-wrap:anywhere}code{font-family:Consolas,monospace}blockquote{margin-left:0;padding-left:16px;border-left:3px solid #d0d7de;color:#59636e}a{color:#0969da}hr{border:0;border-top:1px solid #d0d7de;margin:24px 0}input[type=checkbox]{vertical-align:middle}li{margin:.25em 0}dl{margin:0 0 16px}dt{font-weight:600}dd{margin:0 0 .75em 1.5em}mark{background:#fff2ac;color:inherit;border-radius:2px;padding:0 .1em}.footnotes{margin-top:2em;padding-top:1em;font-size:.85em;color:#59636e}.footnotes ol{padding-left:1.25em}.footnotes a{text-decoration:none}`;
 function makeDocument(){const theme=currentTheme(), md=cleanMarkdown($('markdown').value);const raw=marked.parse(md,{gfm:true,breaks:false});const html=DOMPurify.sanitize(raw,{USE_PROFILES:{html:true},FORBID_TAGS:['style','link','form','iframe','object','embed','video','audio','source','meta','base'],FORBID_ATTR:['style','srcset'],ADD_ATTR:['target'],ALLOW_DATA_ATTR:false});const content=html||'<p style="color:#8a958e">'+t('docWillAppear')+'</p>';
 const css=(theme.css+'\n'+$('custom-css').value).replace(/<\/style/gi,'<\\/style');
 const title=escapeHTML($('filename').value||t('document'));const margin=Number($('margin').value);const paper=$('paper').value;
@@ -234,7 +230,7 @@ if($('clear-imported-css'))$('clear-imported-css').onclick=()=>{if(!imported.len
 function updateExportHint(){$('export-hint').textContent={pdf:t('exportHintPDF'),html:t('exportHintHTML'),docx:t('exportHintDOCX')}[$('format').value];}
 $('format').onchange=()=>updateExportHint();
 $('export').onclick=async()=>{const button=$('export');button.disabled=true;try{const format=$('format').value;const doc=await waitForDocument();if(format==='html'){download(currentDocument,filename()+'.html','text/html;charset=utf-8');toast(t('htmlExported'));}else if(format==='pdf'){document.title=filename();$('preview').contentWindow.focus();$('preview').contentWindow.print();setTimeout(()=>document.title='Markdown Studio',500);toast(t('pdfExported'));}else{const result=await window.exportWord(doc,{title:filename(),paper:$('paper').value,margin:Number($('margin').value)});download(result.blob,filename()+'.docx');toast(result.warnings.length?'DOCX: '+result.warnings.join(' '):t('docxExported'));}}catch(err){console.error(err);toast(err.message||t('exportError'));}finally{button.disabled=false;}};
-window.REPORT_TEMPLATES.forEach((x,i)=>$('template').append(new Option(x.path.split('/').pop().replace('.md',''),String(i))));$('load-template').onclick=()=>{const index=$('template').value;if(index===''){toast(t('chooseTemplateToast'));return;}if(!confirm(t('replaceMdTemplate')))return;const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));};
+window.REPORT_TEMPLATES.forEach((x,i)=>$('template').append(new Option(x.path.split('/').pop().replace('.md',''),String(i))));$('template').addEventListener('change',()=>{const select=$('template'),index=select.value;if(index==='')return;if(!confirm(t('replaceMdTemplate'))){select.value='';return;}const x=window.REPORT_TEMPLATES[Number(index)];$('markdown').value=x.content;$('filename').value=x.path.split('/').pop().replace('.md','');dirty=true;activateTab(false);render();save();toast(t('templateLoaded'));select.value='';});
 // source list loop removed
 $('help').onclick=()=>$('help-dialog').showModal();$('close-help').onclick=()=>$('help-dialog').close();$('help-dialog').addEventListener('click',e=>{if(e.target===$('help-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});
 window.addEventListener('beforeunload',e=>{if(!storageAvailable&&dirty){e.preventDefault();e.returnValue='';}});
